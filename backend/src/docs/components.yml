@@ -1,0 +1,445 @@
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        role:
+          type: string
+          enum: [user, admin]
+        avatar:
+          type: string
+        avatar_public_id:
+          type: string
+        phoneNumber:
+          type: string
+        address:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        country:
+          type: string
+      example:
+        id: 6726412af59c8c32601d22c0
+        username: fakeusername
+        displayName: Fake Name
+        email: fake@example.com
+        password: password1
+        role: user
+        avatar: 'https://example.com/picture/1'
+        avatar_public_id: 'uploads/avatar-cc8c49a8-8dbd-486c-bd63-25e42189db0d'
+        phoneNumber: '01234567899'
+        address: 123 Fake Street
+        dateOfBirth: 1990-01-01
+        country: USA
+
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+        expires:
+          type: string
+          format: date-time
+      example:
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        expires: 2020-05-12T16:18:04.793Z
+
+    AuthTokens:
+      type: object
+      properties:
+        access:
+          $ref: '#/components/schemas/Token'
+        refresh:
+          $ref: '#/components/schemas/Token'
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+
+    Journey:
+      type: object
+      required:
+        - userId
+        - startedAt
+        - endedAt
+        - updatedAt
+        - status
+        - updatedByUser
+        - isAutomaticAdded
+      properties:
+        visitIds:
+          type: array
+          items:
+            type: string
+        title:
+          type: string
+        startedAt:
+          type: number
+        endedAt:
+          type: number
+        updatedAt:
+          type: number
+        status:
+          type: string
+        updatedByUser:
+          type: boolean
+        isAutomaticAdded:
+          type: boolean
+        userId:
+          type: string
+        id:
+          type: string
+    Visit:
+      type: object
+      required:
+        - userId
+        - journeyId
+        - journeyId
+        - locationId
+        - startedAt
+        - endedAt
+        - updatedAt
+        - status
+        - updatedByUser
+        - isAutomaticAdded
+      properties:
+        journeyId:
+          type: string
+        locationId:
+          type: string
+        title:
+          type: string
+        startedAt:
+          type: number
+        endedAt:
+          type: number
+        updatedAt:
+          type: number
+        status:
+          type: string
+        updatedByUser:
+          type: boolean
+        isAutomaticAdded:
+          type: boolean
+        pictures:
+          type: array
+          items:
+            type: object
+        userId:
+          type: string
+        id:
+          type: string
+    Location:
+      type: object
+      required:
+        - userId
+        - cityId
+        - categoryId
+        - address
+        - visitedTime
+        - longitude
+        - latitude
+        - createdAt
+        - status
+        - updatedByUser
+        - isAutomaticAdded
+      properties:
+        address:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        homeNumber:
+          type: string
+        cityId:
+          type: string
+        categoryId:
+          type: string
+        visitedTime:
+          type: number
+        longitude:
+          type: number
+        latitude:
+          type: number
+        title:
+          type: string
+        createdAt:
+          type: number
+        status:
+          type: string
+        updatedByUser:
+          type: boolean
+        isAutomaticAdded:
+          type: boolean
+        pictures:
+          type: array
+          items:
+            type: object
+        userId:
+          type: string
+        id:
+          type: string
+    Position:
+      type: object
+      required:
+        - userId
+        - longitude
+        - latitude
+        - createdAt
+      properties:
+        longitude:
+          type: number
+        latitude:
+          type: number
+        createdAt:
+          type: number
+        locationid:
+          type: string
+        userId:
+          type: string
+        address:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        homeNumber:
+          type: string
+        id:
+          type: string
+    City:
+      type: object
+      required:
+        - userId
+        - name
+        - visitedTime
+        - createdAt
+        - status
+        - updatedByUser
+        - isAutomaticAdded
+      properties:
+        name:
+          type: string
+        visitedTime:
+          type: number
+        createdAt:
+          type: number
+        status:
+          type: string
+        updatedByUser:
+          type: boolean
+        isAutomaticAdded:
+          type: boolean
+        userId:
+          type: string
+        id:
+          type: string
+    Post:
+      type: object
+      required:
+        - _id
+        - userId
+        - content
+        - media
+        - journeyId
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        content:
+          type: string
+        media:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              url:
+                type: string
+        journeyId:
+          type: string
+        createdAt:
+          type: number
+        updatedAt:
+          type: number
+        commentsCount:
+          type: number
+        likesCount:
+          type: number
+    Likes:
+      type: object
+      required:
+        - postId
+        - userId
+        - createdAt
+        - _id
+      properties:
+        postId:
+          type: string
+        userId:
+          type: string
+        createdAt:
+          type: number
+        _id:
+          type: string
+    Comment:
+      type: object
+      required:
+        - _id
+        - userId
+        - postId
+        - content
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        postId:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: number
+        updatedAt:
+          type: number
+    LocationCategory:
+      type: object
+      required:
+        - userId
+        - name
+        - createdAt
+        - title
+        - status
+      properties:
+        name:
+          type: string
+        title:
+          type: string
+        createdAt:
+          type: number
+        status:
+          type: string
+        userId:
+          type: string
+        id:
+          type: string
+    UserStatus:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+        locationId:
+          type: string
+        visitId:
+          type: string
+        journeyId:
+          type: string
+        createdAt:
+          type: number
+        instantSpeed:
+          type: number
+        longitude:
+          type: number
+        latitude:
+          type: number
+  responses:
+    DuplicateEmail:
+      description: Email already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: Email already taken
+    DuplicateJourney:
+      description: Journey already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: hành trình đã tồn tại
+    DuplicateVisit:
+      description: Visit already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: điểm thăm đã tồn tại
+    DuplicateLocation:
+      description: Location already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: điểm cố định đã tồn tại
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 401
+            message: Please authenticate
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 403
+            message: Forbidden
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 404
+            message: Not found
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
