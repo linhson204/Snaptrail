@@ -594,6 +594,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   listUser.insert(0, user);
                   isExpanded.insert(0,false);
                   widget.listComment[commentIndex] = comment;
+                  countFeedBackComment[comment.id] = 0;
                 });
               } else if (editingCommentId != null && !isFeedBack && addFeedBack) {
                 addComment addcomment = addComment(
