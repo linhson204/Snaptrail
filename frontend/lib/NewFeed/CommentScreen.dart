@@ -595,6 +595,8 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   isExpanded.insert(0,false);
                   widget.listComment[commentIndex] = comment;
                   countFeedBackComment[comment.id] = 0;
+                  userFeedBacks[comment.id] = [];
+                  FeedBacks[comment.id] = [];
                 });
               } else if (editingCommentId != null && !isFeedBack && addFeedBack) {
                 addComment addcomment = addComment(
@@ -610,7 +612,6 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   userFeedBacks[comment!.id]!.add(user);
                   FeedBacks[comment.id]!.add(comment.feedBack[FeedBackIndex]);
                   countFeedBackComment[comment.id] = countFeedBackComment[comment.id]! + 1;
-                  print("Thêm thành công");
                   addFeedBack = false;
                   widget.listComment[commentIndex] = comment;
                 });
