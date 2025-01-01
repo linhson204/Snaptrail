@@ -253,19 +253,106 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 55,
-            height: 55,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey,
-              image: user != null
-                  ? DecorationImage(
-                image: NetworkImage(user.avatar),
-                fit: BoxFit.cover,
-              )
-                  : null,
-            ),
+          Column(
+            children: [
+              Container(
+                width: 55,
+                height: 55,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey,
+                  image: user != null
+                      ? DecorationImage(
+                    image: NetworkImage(user.avatar),
+                    fit: BoxFit.cover,
+                  )
+                      : null,
+                ),
+              ),
+              if(countFeedBackComment[comment.id]! > 0)...[
+                Container(
+                  height: 65,
+                  width: 50,
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          height: 65,
+                          width: 3,
+                          color: Color(0xFFDADADA),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 25,
+                        child: Container(
+                          height: 3 ,
+                          width: 50,
+                          color: Color(0xFFDADADA),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                if(isVisibleFeedback[index] && countFeedBackComment[comment.id]! > 1) ...[
+                  for(int i = 1; i < countFeedBackComment[comment.id]!; i++) ...[
+                    Container(
+                      height: 102,
+                      width: 50,
+                      child: Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: Container(
+                              height: 102,
+                              width: 3,
+                              color: Color(0xFFDADADA),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            left: 25,
+                            child: Container(
+                              height: 3 ,
+                              width: 50,
+                              color: Color(0xFFDADADA),
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  ]
+                ],
+                if(!isVisibleFeedback[index] && countFeedBackComment[comment.id]! > 1)...[
+                  Container(
+                    height: 97,
+                    width: 50,
+                    child: Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            height: 97,
+                            width: 3,
+                            color: Color(0xFFDADADA),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          left: 25,
+                          child: Container(
+                            height: 3 ,
+                            width: 50,
+                            color: Color(0xFFDADADA),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ]
+              ]
+            ],
           ),
           SizedBox(width: 10,),
           Column(
@@ -383,7 +470,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   commentController.text = user!.username;
                   setState(() {
                     editingCommentId = comment.id;
-                    print(comment.id);
+                    commentIndex = index;
                     FeedBackIndex = comment.feedBack.length;
                     addFeedBack = true;
                   });
@@ -695,21 +782,16 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                             SizedBox(height: 3,),
                             GestureDetector(
                               onTap: () {
-                                print(comment.feedBack.length);
-                                print("Phản hồi");
                                 commentController.text = user!.username;
                                 setState(() {
-                                  setState(() {
-                                    print("Phản hồi");
-                                    editingCommentId = comment.id;
-                                    print(comment.id);
-                                    FeedBackIndex = comment.feedBack.length;
-                                    addFeedBack = true;
-                                  });
+                                  editingCommentId = comment.id;
+                                  commentIndex = index;
+                                  FeedBackIndex = comment.feedBack.length;
+                                  addFeedBack = true;
                                 });
                               },
                               child: Container(
-                                child: Text("Phản hồi", style: TextStyle(color: Colors.grey),),
+                                child: Text("Phản hồi", style: TextStyle(color: Colors.grey,fontWeight: FontWeight.bold,fontSize: 16),),
                               ),
                             ),
                             SizedBox(height: 8,),
@@ -719,7 +801,6 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                     )
                   ]
                 ]
-
               ]
             ],
           ),
@@ -767,6 +848,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   widget.listComment.insert(0, comment!);
                   listUser.insert(0, user);
                   isExpanded.insert(0,false);
+                  isVisibleFeedback.insert(0, false);
                   widget.listComment[commentIndex] = comment;
                   countFeedBackComment[comment.id] = 0;
                   userFeedBacks[comment.id] = [];
