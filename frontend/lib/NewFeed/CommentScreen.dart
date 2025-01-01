@@ -43,6 +43,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
   bool isFeedBack = false;
   bool addFeedBack = false;
   Map<String,int> countFeedBackComment = {};
+  List<bool> isVisibleFeedback = [];
 
   @override
   void initState() {
@@ -65,6 +66,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
       listUser = await Future.wait(
         widget.listComment.map((comment) async {
           isExpanded.add(false);
+          isVisibleFeedback.add(false);
           countFeedBackComment[comment.id] = comment.feedBack.length;
           print(countFeedBackComment[comment.id]);
           if(comment.feedBack.length > 0) {
@@ -75,7 +77,6 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
 
               // Thêm dữ liệu vào map
               FeedBacks[comment.id]!.add(feedback);
-              print(feedback.content);
               var user = await fetchData(feedback.userId, accountModel.token_access);
               userFeedBacks[comment.id]!.add(user);
             }
@@ -381,7 +382,6 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                 onTap: () {
                   commentController.text = user!.username;
                   setState(() {
-                    print("Phản hồi");
                     editingCommentId = comment.id;
                     print(comment.id);
                     FeedBackIndex = comment.feedBack.length;
@@ -389,163 +389,337 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   });
                 },
                 child: Container(
-                  child: Text("Phản hồi", style: TextStyle(color: Colors.grey),),
+                  child: Text("Phản hồi", style: TextStyle(color: Colors.grey,fontWeight: FontWeight.bold,fontSize: 16),),
                 ),
               ),
               SizedBox(height: 5,),
               if(countFeedBackComment[comment.id]! > 0) ...[
-                for(int k = 0; k < countFeedBackComment[comment.id]!; k++) ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 35,
-                        width: 35,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey,
-                          image: user != null
-                              ? DecorationImage(
-                            image: NetworkImage(userFeedBacks[comment.id]![k]!.avatar),
-                            fit: BoxFit.cover,
-                          )
-                              : null,
-                        ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 35,
+                      width: 35,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey,
+                        image: user != null
+                            ? DecorationImage(
+                          image: NetworkImage(userFeedBacks[comment.id]![0]!.avatar),
+                          fit: BoxFit.cover,
+                        )
+                            : null,
                       ),
-                      SizedBox( width: 5,),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onLongPress: () {
-                              showModalBottomSheet(
-                                backgroundColor: Colors.white,
-                                context: context,
-                                builder: (context) {
-                                  return Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ListTile(
-                                        leading: Icon(Icons.edit),
-                                        title: Text('Chỉnh sửa'),
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          if(accountModel.idUser == comment.feedBack[k].userId) {
-                                            commentController.text = FeedBacks[comment.id]![k]!.content;
-                                            setState(() {
-                                              editingCommentId = comment.id;
-                                              commentIndex = index;
-                                              FeedBackIndex = k;
-                                              FeedBackId = FeedBacks[comment.id]![k]!.id;
-                                              isFeedBack = true;
-                                            });
-                                          } else {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                  content: Text("không thể chỉnh sửa comment của người khác")),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: Icon(Icons.delete),
-                                        title: Text('Xóa'),
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          _deleteFeedback(comment, k);
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            child: Container(
-                              constraints: BoxConstraints(
-                                maxWidth: screenWidth - 142,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Color(0xFFE1E1E1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.fromLTRB(12, 5, 12, 0),
-                                    child: Text(
-                                      userFeedBacks[comment.id]![k]!.username,
-                                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  Container(
-                                    // ,
-                                    padding: EdgeInsets.fromLTRB(12, 0, 12, 5),
-                                    child: LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        // Xác định nếu cần thu gọn dựa trên chiều dài nội dung
-                                        final textPainter = TextPainter(
-                                          text: TextSpan(
-                                            text: FeedBacks[comment.id]![k]!.content,
-                                            style: TextStyle(fontSize: 19),
-                                          ),
-                                          maxLines: maxLinesCollapsed,
-                                          textDirection: TextDirection.ltr,
-                                        )..layout(maxWidth: constraints.maxWidth);
-
-                                        final isOverflow = textPainter.didExceedMaxLines;
-
-                                        return Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              FeedBacks[comment.id]![k]!.content,
-                                              maxLines: isExpanded[index] ? null : maxLinesCollapsed,
-                                              overflow: isExpanded[index]  ? TextOverflow.visible : TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 19),
-                                              softWrap: true,
-                                            ),
-                                            if (isOverflow)
-                                              InkWell(
-                                                onTap: () {
-                                                  setState(() {
-                                                    isExpanded[index]  = !isExpanded[index] ;
-                                                  });
-                                                },
-                                                child: Text(
-                                                  isExpanded[index]  ? "Ẩn bớt" : "Xem thêm",
-                                                  style: TextStyle(color: Colors.blue),
-                                                ),
-                                              ),
-                                          ],
-                                        );
+                    ),
+                    SizedBox( width: 5,),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onLongPress: () {
+                            showModalBottomSheet(
+                              backgroundColor: Colors.white,
+                              context: context,
+                              builder: (context) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ListTile(
+                                      leading: Icon(Icons.edit),
+                                      title: Text('Chỉnh sửa'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        if(accountModel.idUser == comment.feedBack[0].userId) {
+                                          commentController.text = FeedBacks[comment.id]![0]!.content;
+                                          setState(() {
+                                            editingCommentId = comment.id;
+                                            commentIndex = index;
+                                            FeedBackIndex = 0;
+                                            FeedBackId = FeedBacks[comment.id]![0]!.id;
+                                            isFeedBack = true;
+                                          });
+                                        } else {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                                content: Text("không thể chỉnh sửa comment của người khác")),
+                                          );
+                                        }
                                       },
                                     ),
+                                    ListTile(
+                                      leading: Icon(Icons.delete),
+                                      title: Text('Xóa'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        _deleteFeedback(comment, 0);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: screenWidth - 142,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Color(0xFFE1E1E1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.fromLTRB(12, 5, 12, 0),
+                                  child: Text(
+                                    userFeedBacks[comment.id]![0]!.username,
+                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                                   ),
-                                ],
+                                ),
+                                Container(
+                                  // ,
+                                  padding: EdgeInsets.fromLTRB(12, 0, 12, 5),
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      // Xác định nếu cần thu gọn dựa trên chiều dài nội dung
+                                      final textPainter = TextPainter(
+                                        text: TextSpan(
+                                          text: FeedBacks[comment.id]![0]!.content,
+                                          style: TextStyle(fontSize: 19),
+                                        ),
+                                        maxLines: maxLinesCollapsed,
+                                        textDirection: TextDirection.ltr,
+                                      )..layout(maxWidth: constraints.maxWidth);
+
+                                      final isOverflow = textPainter.didExceedMaxLines;
+
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            FeedBacks[comment.id]![0]!.content,
+                                            maxLines: isExpanded[index] ? null : maxLinesCollapsed,
+                                            overflow: isExpanded[index]  ? TextOverflow.visible : TextOverflow.ellipsis,
+                                            style: TextStyle(fontSize: 19),
+                                            softWrap: true,
+                                          ),
+                                          if (isOverflow)
+                                            InkWell(
+                                              onTap: () {
+                                                setState(() {
+                                                  isExpanded[index]  = !isExpanded[index] ;
+                                                });
+                                              },
+                                              child: Text(
+                                                isExpanded[index]  ? "Ẩn bớt" : "Xem thêm",
+                                                style: TextStyle(color: Colors.blue),
+                                              ),
+                                            ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 3,),
+                        GestureDetector(
+                          onTap: () {
+                            print(comment.feedBack.length);
+                            print("Phản hồi");
+                            commentController.text = user!.username;
+                            setState(() {
+                              setState(() {
+                                print("Phản hồi");
+                                editingCommentId = comment.id;
+                                print(comment.id);
+                                FeedBackIndex = comment.feedBack.length;
+                                addFeedBack = true;
+                              });
+                            });
+                          },
+                          child: Container(
+                            child: Text("Phản hồi", style: TextStyle(color: Colors.grey,fontWeight: FontWeight.bold,fontSize: 16),),
+                          ),
+                        ),
+                        SizedBox(height: 8,),
+                      ],
+                    ),
+                  ],
+                ),
+                if(!isVisibleFeedback[index] && countFeedBackComment[comment.id]! > 1) ...[
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isVisibleFeedback[index] = !isVisibleFeedback[index];
+                      });
+                    },
+                    child: Text("Xem ${countFeedBackComment[comment.id]! - 1} phản hồi khác...", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                  )
+                ] else...[
+                  for(int k = 1; k < countFeedBackComment[comment.id]!; k++) ...[
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 35,
+                          width: 35,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey,
+                            image: user != null
+                                ? DecorationImage(
+                              image: NetworkImage(userFeedBacks[comment.id]![k]!.avatar),
+                              fit: BoxFit.cover,
+                            )
+                                : null,
+                          ),
+                        ),
+                        SizedBox( width: 5,),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onLongPress: () {
+                                showModalBottomSheet(
+                                  backgroundColor: Colors.white,
+                                  context: context,
+                                  builder: (context) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ListTile(
+                                          leading: Icon(Icons.edit),
+                                          title: Text('Chỉnh sửa'),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            if(accountModel.idUser == comment.feedBack[k].userId) {
+                                              commentController.text = FeedBacks[comment.id]![k]!.content;
+                                              setState(() {
+                                                editingCommentId = comment.id;
+                                                commentIndex = index;
+                                                FeedBackIndex = k;
+                                                FeedBackId = FeedBacks[comment.id]![k]!.id;
+                                                isFeedBack = true;
+                                              });
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                    content: Text("không thể chỉnh sửa comment của người khác")),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                        ListTile(
+                                          leading: Icon(Icons.delete),
+                                          title: Text('Xóa'),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            _deleteFeedback(comment, k);
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: screenWidth - 142,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFE1E1E1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.fromLTRB(12, 5, 12, 0),
+                                      child: Text(
+                                        userFeedBacks[comment.id]![k]!.username,
+                                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Container(
+                                      // ,
+                                      padding: EdgeInsets.fromLTRB(12, 0, 12, 5),
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          // Xác định nếu cần thu gọn dựa trên chiều dài nội dung
+                                          final textPainter = TextPainter(
+                                            text: TextSpan(
+                                              text: FeedBacks[comment.id]![k]!.content,
+                                              style: TextStyle(fontSize: 19),
+                                            ),
+                                            maxLines: maxLinesCollapsed,
+                                            textDirection: TextDirection.ltr,
+                                          )..layout(maxWidth: constraints.maxWidth);
+
+                                          final isOverflow = textPainter.didExceedMaxLines;
+
+                                          return Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                FeedBacks[comment.id]![k]!.content,
+                                                maxLines: isExpanded[index] ? null : maxLinesCollapsed,
+                                                overflow: isExpanded[index]  ? TextOverflow.visible : TextOverflow.ellipsis,
+                                                style: TextStyle(fontSize: 19),
+                                                softWrap: true,
+                                              ),
+                                              if (isOverflow)
+                                                InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      isExpanded[index]  = !isExpanded[index] ;
+                                                    });
+                                                  },
+                                                  child: Text(
+                                                    isExpanded[index]  ? "Ẩn bớt" : "Xem thêm",
+                                                    style: TextStyle(color: Colors.blue),
+                                                  ),
+                                                ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: 3,),
-                          GestureDetector(
-                            onTap: () {
-                              print(comment.feedBack.length);
-                              print("Phản hồi");
-                              commentController.text = user!.username;
-                              setState(() {
-                                // commentIndex = index;
-                              });
-                            },
-                            child: Container(
-                              child: Text("Phản hồi", style: TextStyle(color: Colors.grey),),
+                            SizedBox(height: 3,),
+                            GestureDetector(
+                              onTap: () {
+                                print(comment.feedBack.length);
+                                print("Phản hồi");
+                                commentController.text = user!.username;
+                                setState(() {
+                                  setState(() {
+                                    print("Phản hồi");
+                                    editingCommentId = comment.id;
+                                    print(comment.id);
+                                    FeedBackIndex = comment.feedBack.length;
+                                    addFeedBack = true;
+                                  });
+                                });
+                              },
+                              child: Container(
+                                child: Text("Phản hồi", style: TextStyle(color: Colors.grey),),
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 8,),
-                        ],
-                      ),
-                    ],
-                  )
+                            SizedBox(height: 8,),
+                          ],
+                        ),
+                      ],
+                    )
+                  ]
                 ]
+
               ]
             ],
           ),
