@@ -1,3 +1,5 @@
+import 'FeedBack.dart';
+
 class Comment {
   String postId;
   String userId;
@@ -5,7 +7,7 @@ class Comment {
   int createdAt;
   int updatedAt;
   String id;
-
+  List<FeedBack> feedBack;
 
   Comment({
     required this.postId,
@@ -13,11 +15,14 @@ class Comment {
     required this.content,
     required this.createdAt,
     required this.updatedAt,
+    required this.feedBack,
     required this.id,
-
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
+    List<FeedBack> feedBackList = (json['listFeedback'] as List)
+        .map((item) => FeedBack.fromJson(item as Map<String, dynamic>))
+        .toList();
     return Comment(
       postId: json['postId'],
       userId: json['userId'],
@@ -25,7 +30,7 @@ class Comment {
       createdAt: json['createdAt'],
       content: json['content'],
       updatedAt: json['updatedAt'],
-
+      feedBack: feedBackList,
     );
   }
 }

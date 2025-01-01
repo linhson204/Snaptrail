@@ -1,4 +1,4 @@
-import 'package:mapsnap_fe/Model/Posts.dart';
+import '../Model/Posts.dart';
 
 class PagePost {
   List<Posts> results;

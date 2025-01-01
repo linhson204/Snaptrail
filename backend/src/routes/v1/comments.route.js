@@ -184,6 +184,14 @@ router
  *       404:
  *         description: Post not found
  */
+
+router.route('/:commentId/feedback/').post(commentController.addFeedbackToComment);
+
+router
+  .route('/:commentId/feedback/:feedbackId')
+  .patch(commentController.updateFeedbackInComment)
+  .delete(commentController.deleteFeedbackFromComment);
+
 router.route('/post/:postId').get(commentController.getCommentsByPostId);
 
 module.exports = router;

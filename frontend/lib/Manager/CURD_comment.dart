@@ -2,8 +2,6 @@ import 'package:http/http.dart' as http;
 import '../Model/Comment.dart';
 import 'dart:convert';
 
-
-
 Future<Comment?> AddComment(addComment addComment) async {
   final url = Uri.parse('http://10.0.2.2:3000/v1/posts/comments');
   final Map<String, dynamic> loadData = {
@@ -95,6 +93,75 @@ Future<List<Comment>> getCommentPost(String postId) async {
 
 Future<void> RemoveComments(String id) async {
   final url = Uri.parse('http://10.0.2.2:3000/v1/posts/comments/$id');
+
+  final response = await http.delete(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  );
+  if (response.statusCode == 204) {
+    print("Xóa thành công");
+  } else {
+    print('Lỗi: ${response.statusCode}');
+  }
+}
+
+
+Future<Comment?> AddFeedback(addComment addComment,String commentId) async {
+  final url = Uri.parse('http://10.0.2.2:3000/v1/posts/comments/$commentId/feedback');
+  final Map<String, dynamic> loadData = {
+    'userId': addComment.userId,
+    'content': addComment.content,
+  };
+
+  final response = await http.post(
+    url,
+    headers: {
+      'Content-Type': 'application/json', // Định dạng JSON
+    },
+    body: jsonEncode(loadData), // Chuyển đổi payload sang chuỗi JSON
+  );
+
+  if (response.statusCode == 200) {
+    // Xử lý thành công
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    return Comment.fromJson(data);
+  } else {
+    // Xử lý lỗi từ API
+    print(response.statusCode);
+  }
+  return null;
+}
+
+Future<Comment?> updateFeedback(String newContent, String commentId,String feedbackId) async {
+  final url = Uri.parse('http://10.0.2.2:3000/v1/posts/comments/$commentId/feedback/$feedbackId');
+  // Dữ liệu cần cập nhật
+  final Map<String, dynamic> updatedData = {
+    'content': newContent,
+  };
+  // Gửi yêu cầu PATCH
+  final response = await http.patch(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode(updatedData),
+  );
+  // Kiểm tra trạng thái phản hồi
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    return Comment.fromJson(data);
+  } else {
+    print('Cập nhật thất bại:');
+  }
+  return null;
+}
+
+
+
+Future<void> RemoveFeedback(String commentId,String feedbackId) async {
+  final url = Uri.parse('http://10.0.2.2:3000/v1/posts/comments/$commentId/feedback/$feedbackId');
 
   final response = await http.delete(
     url,

@@ -115,7 +115,7 @@ Future<Posts?> getPostId(String Id) async {
   );
   if (response.statusCode == 201) {
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    print(data);
+    // print(data);
     return Posts.fromJson(data);
   } else {
     print('Lỗi: ${response.statusCode}');
