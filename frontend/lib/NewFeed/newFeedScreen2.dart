@@ -38,6 +38,7 @@ class _newFeedScreenState2 extends State<newFeedScreen2> {
   late List<List<Comment>> comments;
   List<Like?> likeId = [];
   List<Posts> posts = [];
+  List<String> timePost = [];
   PagePost? pagePost;
   int currentPage = 1;
   int totalPages = 1;
@@ -79,6 +80,8 @@ class _newFeedScreenState2 extends State<newFeedScreen2> {
             user[index] = await getUser(post.userId, accountModel.token_access);
             like[index]= await getLikePost(post.id);
             comments[index]= await getCommentPost(post.id);
+            DateTime utcTime = DateTime.fromMillisecondsSinceEpoch(post.createdAt, isUtc: true);
+            timePost.add(formatTimeDifference(utcTime));
 
             bool userLiked = like[index].any((like) => like?.userId.toString() == accountModel.idUser.toString());
             isLike.add(userLiked);
@@ -130,6 +133,8 @@ class _newFeedScreenState2 extends State<newFeedScreen2> {
         user[index] = await getUser(post.userId, accountModel.token_access);
         like[index] = await getLikePost(post.id);
         comments[index] = await getCommentPost(post.id);
+        DateTime utcTime = DateTime.fromMillisecondsSinceEpoch(post.createdAt, isUtc: true);
+        timePost.add(formatTimeDifference(utcTime));
 
         bool userLiked = like[index].any((like) => like?.userId.toString() == accountModel.idUser.toString());
         isLike.add(userLiked);
@@ -155,6 +160,27 @@ class _newFeedScreenState2 extends State<newFeedScreen2> {
     pagePost = await getInfoPosts2(page.toString(),"page",widget.province,widget.district,widget.commune);
     posts.addAll(pagePost!.results);
     return posts;
+  }
+
+  String formatTimeDifference(DateTime postTime) {
+    DateTime now = DateTime.now();
+    DateTime vietnamTime = now.toUtc().add(Duration(hours: 7));
+    Duration difference = vietnamTime.difference(postTime); // Tính khoảng cách thời gian
+    if (difference.inSeconds < 60) {
+      return 'Vừa xong';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} phút trước';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} giờ trước';
+    } else if (difference.inDays < 30) {
+      return '${difference.inDays} ngày trước';
+    } else if (difference.inDays < 365) {
+      int months = (difference.inDays / 30).floor();
+      return '$months tháng trước';
+    } else {
+      int years = (difference.inDays / 365).floor();
+      return '$years năm trước';
+    }
   }
 
   RichText Address(int index, Posts post) {
@@ -451,11 +477,18 @@ class _newFeedScreenState2 extends State<newFeedScreen2> {
                                                 ),
                                               ),
                                               SizedBox(width: 15),
-                                              Expanded(
-                                                child: Container(
-                                                  padding: EdgeInsets.symmetric(vertical: 5),
-                                                  child: Text(postUser.username, style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold),),
-                                                ),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    width: screenWidth * 3 / 5 - 10,
+                                                    child: Text(postUser.username, style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold),),
+                                                  ),
+                                                  Container(
+                                                    // height: 20,
+                                                    child: Text(timePost[index],style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.grey),),
+                                                  )
+                                                ],
                                               ),
                                               SizedBox(width: 20),
                                               GestureDetector(

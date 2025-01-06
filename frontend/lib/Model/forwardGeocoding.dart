@@ -3,6 +3,9 @@ class ForwardGeocoding {
   double lat;
   double lng;
   String name;
+  String district;
+  String commune;
+  String province;
 
 
   ForwardGeocoding({
@@ -10,6 +13,9 @@ class ForwardGeocoding {
     required this.lat,
     required this.lng,
     required this.name,
+    required this.district,
+    required this.commune,
+    required this.province,
 
   });
 
@@ -19,6 +25,9 @@ class ForwardGeocoding {
       lat: json['results'][0]['geometry']['location']['lat'],
       lng: json['results'][0]['geometry']['location']['lng'],
       name: json['results'][0]['name'],
+      district: json['results'][0]['compound']['district'],
+      commune: json['results'][0]['compound']['commune'],
+      province: json['results'][0]['compound']['province'],
     );
   }
 }

@@ -108,11 +108,12 @@ Future<void> RemoveComments(String id) async {
 }
 
 
-Future<Comment?> AddFeedback(addComment addComment,String commentId) async {
+Future<Comment?> AddFeedback(addComment addComment,String commentId,String nameTag) async {
   final url = Uri.parse('http://10.0.2.2:3000/v1/posts/comments/$commentId/feedback');
   final Map<String, dynamic> loadData = {
     'userId': addComment.userId,
     'content': addComment.content,
+    'nameTag': nameTag,
   };
 
   final response = await http.post(

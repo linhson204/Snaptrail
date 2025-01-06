@@ -35,6 +35,7 @@ class _newFeedScreenState extends State<newFeedScreen> {
   late List<List<Comment>> comments;
   List<Like?> likeId = [];
   List<Posts> posts = [];
+  List<String> timePost = [];
   PagePost? pagePost;
   int currentPage = 1;
   int totalPages = 1;
@@ -55,6 +56,32 @@ class _newFeedScreenState extends State<newFeedScreen> {
     totalPages = pagePost!.totalPages;
   }
 
+  void resetPage() {
+    setState(() {
+      // Reset các biến về trạng thái ban đầu
+      isLike = [];
+      count = 0;
+      listPost = Future.value([]);
+      user = [];
+      like = [];
+      comments = [];
+      likeId = [];
+      posts = [];
+      timePost = [];
+      currentPage = 1;
+      totalPages = 1;
+      isLoadData = true;
+      province = '';
+      district = '';
+      commune = '';
+      hehe = true;
+    });
+
+    // Gọi lại hàm khởi tạo dữ liệu
+    initializePageData();
+  }
+
+
   @override
   void initState() {
     var accountModel = Provider.of<AccountModel>(context, listen: false);
@@ -63,8 +90,6 @@ class _newFeedScreenState extends State<newFeedScreen> {
       if (scrollController.position.atEdge && scrollController.position.pixels != 0 && isLoadData) {
         currentPage++;
         // Load next page when scrolled to the bottom
-        print("hehe");
-        print(currentPage);
         listPost = resetData(currentPage).then((posts) async {
           user = List<User?>.generate(posts.length, (index) => null);
           like = List<List<Like?>>.generate(posts.length, (index) => []);
@@ -76,6 +101,8 @@ class _newFeedScreenState extends State<newFeedScreen> {
             user[index] = await getUser(post.userId, accountModel.token_access);
             like[index]= await getLikePost(post.id);
             comments[index]= await getCommentPost(post.id);
+            DateTime utcTime = DateTime.fromMillisecondsSinceEpoch(post.createdAt, isUtc: true);
+            timePost.add(formatTimeDifference(utcTime));
 
             bool userLiked = like[index].any((like) => like?.userId.toString() == accountModel.idUser.toString());
             isLike.add(userLiked);
@@ -100,6 +127,12 @@ class _newFeedScreenState extends State<newFeedScreen> {
           }
         });
       }
+      if (scrollController.position.pixels <= 0) {
+        // Khi cuộn đến đầu trang
+        setState(() {
+          resetPage();
+        });
+      }
     });
     listPost = Future.value([]);
     if(hehe) {
@@ -112,7 +145,6 @@ class _newFeedScreenState extends State<newFeedScreen> {
   Future<void> initializePageData() async {
     // Đợi getPageData hoàn tất
     await getPageData();
-
     // Thực hiện các lệnh khác sau khi getPageData hoàn tất
     listPost = resetData(currentPage).then((posts) async {
       user = List<User?>.generate(posts.length, (index) => null);
@@ -127,6 +159,8 @@ class _newFeedScreenState extends State<newFeedScreen> {
         user[index] = await getUser(post.userId, accountModel.token_access);
         like[index] = await getLikePost(post.id);
         comments[index] = await getCommentPost(post.id);
+        DateTime utcTime = DateTime.fromMillisecondsSinceEpoch(post.createdAt, isUtc: true);
+        timePost.add(formatTimeDifference(utcTime));
 
         bool userLiked = like[index].any((like) => like?.userId.toString() == accountModel.idUser.toString());
         isLike.add(userLiked);
@@ -147,6 +181,28 @@ class _newFeedScreenState extends State<newFeedScreen> {
       hehe = false; // Đánh dấu hoàn thành
     });
   }
+
+  String formatTimeDifference(DateTime postTime) {
+    DateTime now = DateTime.now();
+    DateTime vietnamTime = now.toUtc().add(Duration(hours: 7));
+    Duration difference = vietnamTime.difference(postTime); // Tính khoảng cách thời gian
+    if (difference.inSeconds < 60) {
+      return 'Vừa xong';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} phút trước';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} giờ trước';
+    } else if (difference.inDays < 30) {
+      return '${difference.inDays} ngày trước';
+    } else if (difference.inDays < 365) {
+      int months = (difference.inDays / 30).floor();
+      return '$months tháng trước';
+    } else {
+      int years = (difference.inDays / 365).floor();
+      return '$years năm trước';
+    }
+  }
+
 
   Future<List<Posts>> resetData(int page) async {
     pagePost = await getInfoPosts2(page.toString(),"page",'','','');
@@ -433,11 +489,18 @@ class _newFeedScreenState extends State<newFeedScreen> {
                                                 ),
                                               ),
                                               SizedBox(width: 15),
-                                              Expanded(
-                                                child: Container(
-                                                  padding: EdgeInsets.symmetric(vertical: 5),
-                                                  child: Text(postUser.username, style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold),),
-                                                ),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    width: screenWidth * 3 / 5 - 10,
+                                                    child: Text(postUser.username, style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold),),
+                                                  ),
+                                                  Container(
+                                                    // height: 20,
+                                                    child: Text(timePost[index],style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.grey),),
+                                                  )
+                                                ],
                                               ),
                                               SizedBox(width: 20),
                                               GestureDetector(

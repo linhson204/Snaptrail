@@ -12,6 +12,11 @@ const feedbackSchema = new Schema({
     type: String,
     required: true,
   },
+  nameTag: {
+    type: String,
+    required: true,
+    default: '',
+  },
   createdAt: {
     type: Number,
     required: true,

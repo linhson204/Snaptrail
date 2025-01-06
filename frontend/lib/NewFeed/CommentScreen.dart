@@ -37,6 +37,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
   List<User?> listUser = [];
   Map<String,List<FeedBack?>> FeedBacks = {};
   Map<String,List<User?>> userFeedBacks= {};
+  Map<String,List<String>> listNameTag= {};
   bool isLoading = true;
   List<bool> isExpanded = [];
   static const int maxLinesCollapsed = 3; // Số dòng tối đa khi thu gọn
@@ -44,6 +45,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
   bool addFeedBack = false;
   Map<String,int> countFeedBackComment = {};
   List<bool> isVisibleFeedback = [];
+  String nameTag = "";
 
   @override
   void initState() {
@@ -66,7 +68,11 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
       listUser = await Future.wait(
         widget.listComment.map((comment) async {
           isExpanded.add(false);
-          isVisibleFeedback.add(false);
+          if(comment.feedBack.length < 2) {
+            isVisibleFeedback.add(true);
+          } else {
+            isVisibleFeedback.add(false);
+          }
           countFeedBackComment[comment.id] = comment.feedBack.length;
           print(countFeedBackComment[comment.id]);
           if(comment.feedBack.length > 0) {
@@ -74,9 +80,11 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
               // Khởi tạo danh sách nếu chưa có
               FeedBacks[comment.id] ??= [];
               userFeedBacks[comment.id] ??= [];
+              listNameTag[comment.id] ??=[];
 
               // Thêm dữ liệu vào map
               FeedBacks[comment.id]!.add(feedback);
+              listNameTag[comment.id]!.add(feedback.nameTag);
               var user = await fetchData(feedback.userId, accountModel.token_access);
               userFeedBacks[comment.id]!.add(user);
             }
@@ -103,6 +111,69 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+
+  TextSpan FeedBackComment(int index, Comment comment) {
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: FeedBacks[comment.id]![index]!.nameTag,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue, // Kiểu chữ cho tên người dùng
+          ),
+        ),
+        TextSpan(
+          text: " ", // Khoảng cách giữa tên và nội dung
+          style: TextStyle(
+            fontSize: 22,
+            color: Colors.black,
+          ),
+        ),
+        TextSpan(
+          text: FeedBacks[comment.id]![index]!.content,
+          style: TextStyle(
+            fontSize: 22,
+            color: Colors.black, // Kiểu chữ cho nội dung
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  RichText FeedBackComment2(int index, Comment comment) {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: FeedBacks[comment.id]![index]!.nameTag,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue, // Kiểu chữ cho tên người dùng
+            ),
+          ),
+          TextSpan(
+            text: " ",
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.black, // Kiểu chữ cho tên người dùng
+            ),
+          ),
+
+          TextSpan(
+            text: FeedBacks[comment.id]![index]!.content,
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.black, // Kiểu chữ cho địa điểm
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   void _deleteComment(Comment comment, int index) {
     showDialog(
@@ -220,7 +291,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
         children: [
           Text(
             "Bình luận",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
           Expanded(
@@ -245,409 +316,168 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
     );
   }
 
+
   Widget buildCommentTile(Comment comment, User? user, AccountModel accountModel, int index) {
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
+
+    // Tính chiều cao của từng comment
+    double commentHeight ;
     return Container(
       padding: EdgeInsets.all(8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          Column(
-            children: [
-              Container(
-                width: 55,
-                height: 55,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey,
-                  image: user != null
-                      ? DecorationImage(
-                    image: NetworkImage(user.avatar),
-                    fit: BoxFit.cover,
-                  )
-                      : null,
-                ),
-              ),
-              if(countFeedBackComment[comment.id]! > 0)...[
-                Container(
-                  height: 65,
-                  width: 50,
-                  child: Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.center,
-                        child: Container(
-                          height: 65,
-                          width: 3,
-                          color: Color(0xFFDADADA),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        left: 25,
-                        child: Container(
-                          height: 3 ,
-                          width: 50,
-                          color: Color(0xFFDADADA),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                if(isVisibleFeedback[index] && countFeedBackComment[comment.id]! > 1) ...[
-                  for(int i = 1; i < countFeedBackComment[comment.id]!; i++) ...[
-                    Container(
-                      height: 102,
-                      width: 50,
-                      child: Stack(
-                        children: [
-                          Align(
-                            alignment: Alignment.center,
-                            child: Container(
-                              height: 102,
-                              width: 3,
-                              color: Color(0xFFDADADA),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            left: 25,
-                            child: Container(
-                              height: 3 ,
-                              width: 50,
-                              color: Color(0xFFDADADA),
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ]
-                ],
-                if(!isVisibleFeedback[index] && countFeedBackComment[comment.id]! > 1)...[
-                  Container(
-                    height: 97,
-                    width: 50,
-                    child: Stack(
-                      children: [
-                        Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            height: 97,
-                            width: 3,
-                            color: Color(0xFFDADADA),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 25,
-                          child: Container(
-                            height: 3 ,
-                            width: 50,
-                            color: Color(0xFFDADADA),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ]
-              ]
-            ],
-          ),
-          SizedBox(width: 10,),
-          Column(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onLongPress: () {
-                  showModalBottomSheet(
-                    backgroundColor: Colors.white,
-                    context: context,
-                    builder: (context) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ListTile(
-                            leading: Icon(Icons.edit),
-                            title: Text('Chỉnh sửa'),
-                            onTap: () {
-                              Navigator.pop(context);
-                              if(accountModel.idUser == comment.userId) {
-                                commentController.text = comment.content;
-                                setState(() {
-                                  editingCommentId = comment.id;
-                                  commentIndex = index;
-                                });
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text("không thể chỉnh sửa comment của người khác")),
-                                );
-                              }
-                            },
-                          ),
-                          ListTile(
-                            leading: Icon(Icons.delete),
-                            title: Text('Xóa'),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _deleteComment(comment, index);
-                            },
-                          ),
-                        ],
+              Column(
+                children: [
+                  Container(
+                    width: 55,
+                    height: 55,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey,
+                      image: user != null
+                          ? DecorationImage(
+                        image: NetworkImage(user.avatar),
+                        fit: BoxFit.cover,
+                      )
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: 10,),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onLongPress: () {
+                      showModalBottomSheet(
+                        backgroundColor: Colors.white,
+                        context: context,
+                        builder: (context) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: Icon(Icons.edit),
+                                title: Text('Chỉnh sửa'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  if(accountModel.idUser == comment.userId) {
+                                    commentController.text = comment.content;
+                                    setState(() {
+                                      isFeedBack = false;
+                                      addFeedBack = false;
+                                      editingCommentId = comment.id;
+                                      commentIndex = index;
+                                    });
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text("không thể chỉnh sửa comment của người khác")),
+                                    );
+                                  }
+                                },
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.delete),
+                                title: Text('Xóa'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _deleteComment(comment, index);
+                                },
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
-                  );
-                },
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: screenWidth * 0.75,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFE1E1E1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.fromLTRB(12, 5, 12, 0),
-                        child: Text(
-                          user?.username ?? "Unknown",
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: screenWidth * 0.75,
                       ),
-                      Container(
-                        padding: EdgeInsets.fromLTRB(12, 0, 12, 5),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            // Xác định nếu cần thu gọn dựa trên chiều dài nội dung
-                            final textPainter = TextPainter(
-                              text: TextSpan(
-                                text: comment.content,
-                                style: TextStyle(fontSize: 19),
-                              ),
-                              maxLines: maxLinesCollapsed,
-                              textDirection: TextDirection.ltr,
-                            )..layout(maxWidth: constraints.maxWidth);
-
-                            final isOverflow = textPainter.didExceedMaxLines;
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  comment.content,
-                                  maxLines: isExpanded[index] ? null : maxLinesCollapsed,
-                                  overflow: isExpanded[index]  ? TextOverflow.visible : TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 19),
-                                  softWrap: true,
-                                ),
-                                if (isOverflow)
-                                  InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        isExpanded[index]  = !isExpanded[index] ;
-                                      });
-                                    },
-                                    child: Text(
-                                      isExpanded[index]  ? "Ẩn bớt" : "Xem thêm",
-                                      style: TextStyle(color: Colors.blue),
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 3,),
-              GestureDetector(
-                onTap: () {
-                  commentController.text = user!.username;
-                  setState(() {
-                    editingCommentId = comment.id;
-                    commentIndex = index;
-                    FeedBackIndex = comment.feedBack.length;
-                    addFeedBack = true;
-                  });
-                },
-                child: Container(
-                  child: Text("Phản hồi", style: TextStyle(color: Colors.grey,fontWeight: FontWeight.bold,fontSize: 16),),
-                ),
-              ),
-              SizedBox(height: 5,),
-              if(countFeedBackComment[comment.id]! > 0) ...[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 35,
-                      width: 35,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey,
-                        image: user != null
-                            ? DecorationImage(
-                          image: NetworkImage(userFeedBacks[comment.id]![0]!.avatar),
-                          fit: BoxFit.cover,
-                        )
-                            : null,
+                        color: Color(0xFFE1E1E1),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ),
-                    SizedBox( width: 5,),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        GestureDetector(
-                          onLongPress: () {
-                            showModalBottomSheet(
-                              backgroundColor: Colors.white,
-                              context: context,
-                              builder: (context) {
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.fromLTRB(12, 5, 12, 0),
+                            child: Text(
+                              user?.username ?? "Unknown",
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.fromLTRB(12, 0, 12, 5),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                // Xác định nếu cần thu gọn dựa trên chiều dài nội dung
+                                final textPainter = TextPainter(
+                                  text: TextSpan(
+                                    text: comment.content,
+                                    style: TextStyle(fontSize: 22),
+                                  ),
+                                  maxLines: maxLinesCollapsed,
+                                  textDirection: TextDirection.ltr,
+                                )..layout(maxWidth: constraints.maxWidth);
+
+                                final isOverflow = textPainter.didExceedMaxLines;
+
                                 return Column(
-                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    ListTile(
-                                      leading: Icon(Icons.edit),
-                                      title: Text('Chỉnh sửa'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        if(accountModel.idUser == comment.feedBack[0].userId) {
-                                          commentController.text = FeedBacks[comment.id]![0]!.content;
+                                    Text(
+                                      comment.content,
+                                      maxLines: isExpanded[index] ? null : maxLinesCollapsed,
+                                      overflow: isExpanded[index]  ? TextOverflow.visible : TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 22),
+                                      softWrap: true,
+                                    ),
+                                    if (isOverflow)
+                                      InkWell(
+                                        onTap: () {
                                           setState(() {
-                                            editingCommentId = comment.id;
-                                            commentIndex = index;
-                                            FeedBackIndex = 0;
-                                            FeedBackId = FeedBacks[comment.id]![0]!.id;
-                                            isFeedBack = true;
+                                            isExpanded[index]  = !isExpanded[index] ;
                                           });
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                                content: Text("không thể chỉnh sửa comment của người khác")),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: Icon(Icons.delete),
-                                      title: Text('Xóa'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        _deleteFeedback(comment, 0);
-                                      },
-                                    ),
+                                        },
+                                        child: Text(
+                                          isExpanded[index]  ? "Ẩn bớt" : "Xem thêm",
+                                          style: TextStyle(color: Colors.blue),
+                                        ),
+                                      ),
                                   ],
                                 );
                               },
-                            );
-                          },
-                          child: Container(
-                            constraints: BoxConstraints(
-                              maxWidth: screenWidth - 142,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Color(0xFFE1E1E1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.fromLTRB(12, 5, 12, 0),
-                                  child: Text(
-                                    userFeedBacks[comment.id]![0]!.username,
-                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Container(
-                                  // ,
-                                  padding: EdgeInsets.fromLTRB(12, 0, 12, 5),
-                                  child: LayoutBuilder(
-                                    builder: (context, constraints) {
-                                      // Xác định nếu cần thu gọn dựa trên chiều dài nội dung
-                                      final textPainter = TextPainter(
-                                        text: TextSpan(
-                                          text: FeedBacks[comment.id]![0]!.content,
-                                          style: TextStyle(fontSize: 19),
-                                        ),
-                                        maxLines: maxLinesCollapsed,
-                                        textDirection: TextDirection.ltr,
-                                      )..layout(maxWidth: constraints.maxWidth);
-
-                                      final isOverflow = textPainter.didExceedMaxLines;
-
-                                      return Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            FeedBacks[comment.id]![0]!.content,
-                                            maxLines: isExpanded[index] ? null : maxLinesCollapsed,
-                                            overflow: isExpanded[index]  ? TextOverflow.visible : TextOverflow.ellipsis,
-                                            style: TextStyle(fontSize: 19),
-                                            softWrap: true,
-                                          ),
-                                          if (isOverflow)
-                                            InkWell(
-                                              onTap: () {
-                                                setState(() {
-                                                  isExpanded[index]  = !isExpanded[index] ;
-                                                });
-                                              },
-                                              child: Text(
-                                                isExpanded[index]  ? "Ẩn bớt" : "Xem thêm",
-                                                style: TextStyle(color: Colors.blue),
-                                              ),
-                                            ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
-                        SizedBox(height: 3,),
-                        GestureDetector(
-                          onTap: () {
-                            print(comment.feedBack.length);
-                            print("Phản hồi");
-                            commentController.text = user!.username;
-                            setState(() {
-                              setState(() {
-                                print("Phản hồi");
-                                editingCommentId = comment.id;
-                                print(comment.id);
-                                FeedBackIndex = comment.feedBack.length;
-                                addFeedBack = true;
-                              });
-                            });
-                          },
-                          child: Container(
-                            child: Text("Phản hồi", style: TextStyle(color: Colors.grey,fontWeight: FontWeight.bold,fontSize: 16),),
-                          ),
-                        ),
-                        SizedBox(height: 8,),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                if(!isVisibleFeedback[index] && countFeedBackComment[comment.id]! > 1) ...[
+                  ),
+                  SizedBox(height: 3,),
                   GestureDetector(
                     onTap: () {
+                      nameTag = user!.username;
                       setState(() {
-                        isVisibleFeedback[index] = !isVisibleFeedback[index];
+                        editingCommentId = comment.id;
+                        commentIndex = index;
+                        FeedBackIndex = comment.feedBack.length;
+                        addFeedBack = true;
                       });
                     },
-                    child: Text("Xem ${countFeedBackComment[comment.id]! - 1} phản hồi khác...", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
-                  )
-                ] else...[
-                  for(int k = 1; k < countFeedBackComment[comment.id]!; k++) ...[
+                    child: Container(
+                      child: Text("Phản hồi", style: TextStyle(color: Colors.grey,fontWeight: FontWeight.bold,fontSize: 16),),
+                    ),
+                  ),
+                  SizedBox(height: 5,),
+
+                  if(countFeedBackComment[comment.id]! > 0) ...[
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -659,7 +489,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                             color: Colors.grey,
                             image: user != null
                                 ? DecorationImage(
-                              image: NetworkImage(userFeedBacks[comment.id]![k]!.avatar),
+                              image: NetworkImage(userFeedBacks[comment.id]![0]!.avatar),
                               fit: BoxFit.cover,
                             )
                                 : null,
@@ -683,13 +513,14 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                                           title: Text('Chỉnh sửa'),
                                           onTap: () {
                                             Navigator.pop(context);
-                                            if(accountModel.idUser == comment.feedBack[k].userId) {
-                                              commentController.text = FeedBacks[comment.id]![k]!.content;
+                                            if(accountModel.idUser == comment.feedBack[0].userId) {
+                                              commentController.text = FeedBacks[comment.id]![0]!.content;
                                               setState(() {
+                                                addFeedBack = false;
                                                 editingCommentId = comment.id;
                                                 commentIndex = index;
-                                                FeedBackIndex = k;
-                                                FeedBackId = FeedBacks[comment.id]![k]!.id;
+                                                FeedBackIndex = 0;
+                                                FeedBackId = FeedBacks[comment.id]![0]!.id;
                                                 isFeedBack = true;
                                               });
                                             } else {
@@ -705,7 +536,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                                           title: Text('Xóa'),
                                           onTap: () {
                                             Navigator.pop(context);
-                                            _deleteFeedback(comment, k);
+                                            _deleteFeedback(comment, 0);
                                           },
                                         ),
                                       ],
@@ -727,21 +558,17 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                                     Container(
                                       padding: EdgeInsets.fromLTRB(12, 5, 12, 0),
                                       child: Text(
-                                        userFeedBacks[comment.id]![k]!.username,
+                                        userFeedBacks[comment.id]![0]!.username,
                                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                     Container(
-                                      // ,
                                       padding: EdgeInsets.fromLTRB(12, 0, 12, 5),
                                       child: LayoutBuilder(
                                         builder: (context, constraints) {
                                           // Xác định nếu cần thu gọn dựa trên chiều dài nội dung
                                           final textPainter = TextPainter(
-                                            text: TextSpan(
-                                              text: FeedBacks[comment.id]![k]!.content,
-                                              style: TextStyle(fontSize: 19),
-                                            ),
+                                            text: FeedBackComment(0, comment),
                                             maxLines: maxLinesCollapsed,
                                             textDirection: TextDirection.ltr,
                                           )..layout(maxWidth: constraints.maxWidth);
@@ -751,11 +578,10 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                                           return Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                FeedBacks[comment.id]![k]!.content,
+                                              RichText(
+                                                text: FeedBackComment2(0, comment).text,
                                                 maxLines: isExpanded[index] ? null : maxLinesCollapsed,
                                                 overflow: isExpanded[index]  ? TextOverflow.visible : TextOverflow.ellipsis,
-                                                style: TextStyle(fontSize: 19),
                                                 softWrap: true,
                                               ),
                                               if (isOverflow)
@@ -782,12 +608,17 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                             SizedBox(height: 3,),
                             GestureDetector(
                               onTap: () {
-                                commentController.text = user!.username;
+                                print(comment.feedBack.length);
+                                print("Phản hồi");
+                                nameTag = user!.username;
                                 setState(() {
-                                  editingCommentId = comment.id;
-                                  commentIndex = index;
-                                  FeedBackIndex = comment.feedBack.length;
-                                  addFeedBack = true;
+                                  setState(() {
+                                    print("Phản hồi");
+                                    editingCommentId = comment.id;
+                                    print(comment.id);
+                                    FeedBackIndex = comment.feedBack.length;
+                                    addFeedBack = true;
+                                  });
                                 });
                               },
                               child: Container(
@@ -798,14 +629,174 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                           ],
                         ),
                       ],
-                    )
+                    ),
+                    if(!isVisibleFeedback[index] && countFeedBackComment[comment.id]! > 1) ...[
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isVisibleFeedback[index] = !isVisibleFeedback[index];
+                          });
+                        },
+                        child: Text("Xem ${countFeedBackComment[comment.id]! - 1} phản hồi khác...", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                      )
+                    ] else...[
+                      for(int k = 1; k < countFeedBackComment[comment.id]!; k++) ...[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 35,
+                              width: 35,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey,
+                                image: user != null
+                                    ? DecorationImage(
+                                  image: NetworkImage(userFeedBacks[comment.id]![k]!.avatar),
+                                  fit: BoxFit.cover,
+                                )
+                                    : null,
+                              ),
+                            ),
+                            SizedBox( width: 5,),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                GestureDetector(
+                                  onLongPress: () {
+                                    showModalBottomSheet(
+                                      backgroundColor: Colors.white,
+                                      context: context,
+                                      builder: (context) {
+                                        return Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ListTile(
+                                              leading: Icon(Icons.edit),
+                                              title: Text('Chỉnh sửa'),
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                                if(accountModel.idUser == comment.feedBack[k].userId) {
+                                                  commentController.text = FeedBacks[comment.id]![k]!.content;
+                                                  setState(() {
+                                                    addFeedBack = false;
+                                                    editingCommentId = comment.id;
+                                                    commentIndex = index;
+                                                    FeedBackIndex = k;
+                                                    FeedBackId = FeedBacks[comment.id]![k]!.id;
+                                                    isFeedBack = true;
+                                                  });
+                                                } else {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                        content: Text("không thể chỉnh sửa comment của người khác")),
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                            ListTile(
+                                              leading: Icon(Icons.delete),
+                                              title: Text('Xóa'),
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                                _deleteFeedback(comment, k);
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: Container(
+                                    constraints: BoxConstraints(
+                                      maxWidth: screenWidth - 142,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFE1E1E1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.fromLTRB(12, 5, 12, 0),
+                                          child: Text(
+                                            userFeedBacks[comment.id]![k]!.username,
+                                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.fromLTRB(12, 0, 12, 5),
+                                          child: LayoutBuilder(
+                                            builder: (context, constraints) {
+                                              // Xác định nếu cần thu gọn dựa trên chiều dài nội dung
+                                              final textPainter = TextPainter(
+                                                text: FeedBackComment(k, comment),
+                                                maxLines: maxLinesCollapsed,
+                                                textDirection: TextDirection.ltr,
+                                              )..layout(maxWidth: constraints.maxWidth);
+
+                                              final isOverflow = textPainter.didExceedMaxLines;
+
+                                              return Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  RichText(
+                                                    text: FeedBackComment2(k, comment).text,
+                                                    maxLines: isExpanded[index] ? null : maxLinesCollapsed,
+                                                    overflow: isExpanded[index]  ? TextOverflow.visible : TextOverflow.ellipsis,
+                                                    softWrap: true,
+                                                  ),
+                                                  if (isOverflow)
+                                                    InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          isExpanded[index]  = !isExpanded[index] ;
+                                                        });
+                                                      },
+                                                      child: Text(
+                                                        isExpanded[index]  ? "Ẩn bớt" : "Xem thêm",
+                                                        style: TextStyle(color: Colors.blue),
+                                                      ),
+                                                    ),
+                                                ],
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 3,),
+                                GestureDetector(
+                                  onTap: () {
+                                    nameTag = user!.username;
+                                    setState(() {
+                                      editingCommentId = comment.id;
+                                      commentIndex = index;
+                                      FeedBackIndex = comment.feedBack.length;
+                                      addFeedBack = true;
+                                    });
+                                  },
+                                  child: Container(
+                                    child: Text("Phản hồi", style: TextStyle(color: Colors.grey,fontWeight: FontWeight.bold,fontSize: 16),),
+                                  ),
+                                ),
+                                SizedBox(height: 8,),
+                              ],
+                            ),
+                          ],
+                        )
+                      ]
+                    ]
                   ]
-                ]
-              ]
+                ],
+              ),
             ],
           ),
         ],
-      ),
+      )
     );
   }
 
@@ -816,9 +807,8 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
           child: TextField(
             controller: commentController,
             decoration: InputDecoration(
-              hintText: editingCommentId == null
-                  ? "Viết bình luận..."
-                  : "Chỉnh sửa bình luận...",
+              hintText:  editingCommentId == null ? "Viết bình luận..." : ((!addFeedBack) ? "Chỉnh sửa bình luận..."
+                  : "Phản hồi ${nameTag}"),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -834,7 +824,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
               DateTime vietnamTime = now.toUtc().add(Duration(hours: 7));
               Comment? comment;
 
-              if (editingCommentId == null && !isFeedBack) {
+              if (editingCommentId == null) {
                 addComment addcomment = addComment(
                   postId: widget.post.id,
                   userId: accountModel.idUser,
@@ -848,7 +838,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   widget.listComment.insert(0, comment!);
                   listUser.insert(0, user);
                   isExpanded.insert(0,false);
-                  isVisibleFeedback.insert(0, false);
+                  isVisibleFeedback.insert(0, true);
                   widget.listComment[commentIndex] = comment;
                   countFeedBackComment[comment.id] = 0;
                   userFeedBacks[comment.id] = [];
@@ -862,7 +852,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   createdAt: vietnamTime.millisecondsSinceEpoch,
                   updatedAt: vietnamTime.millisecondsSinceEpoch,
                 );
-                comment = await AddFeedback(addcomment,editingCommentId!);
+                comment = await AddFeedback(addcomment,editingCommentId!,nameTag);
                 User? user = await fetchData(accountModel.idUser, accountModel.token_access);
                 setState(() {
                   userFeedBacks[comment!.id]!.add(user);
@@ -870,6 +860,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                   countFeedBackComment[comment.id] = countFeedBackComment[comment.id]! + 1;
                   addFeedBack = false;
                   widget.listComment[commentIndex] = comment;
+                  nameTag = "";
                 });
               } else if(editingCommentId != null && !isFeedBack && !addFeedBack) {
                 addComment addcomment = addComment(

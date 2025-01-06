@@ -36,6 +36,9 @@ class _PostScreenState extends State<PostScreen> {
   List<Location> listLocation = [];
   bool isCurrentLocationSelected = false;
   String address = "Một nơi nào đó";
+  String district = "...";
+  String commune = "...";
+  String province = "...";
   late TextEditingController addressController = TextEditingController();
 
 
@@ -210,6 +213,9 @@ class _PostScreenState extends State<PostScreen> {
                                   // Cập nhật trạng thái
                                   setState(() {
                                     address = infoLocation!.address;
+                                    province = infoLocation.province;
+                                    commune = infoLocation.commune;
+                                    district = infoLocation.district;
                                     isCurrentLocationSelected = true;
                                     addressController.clear();
                                   });
@@ -281,6 +287,9 @@ class _PostScreenState extends State<PostScreen> {
                         if(!isCurrentLocationSelected) {
                           ForwardGeocoding? infoLocation = await GetLatIngbyAddress(addressController.text);
                           address = infoLocation!.formatted_address;
+                          province = infoLocation.province;
+                          commune = infoLocation.commune;
+                          district = infoLocation.district;
                         }
                         CreatePost createPost = CreatePost(
                           userId: accountModel.idUser,
@@ -290,7 +299,10 @@ class _PostScreenState extends State<PostScreen> {
                           updatedAt: vietnamTime.millisecondsSinceEpoch,
                           commentsCount: 0,
                           likesCount: 0,
-                          address: location == null ? address : location!.address,
+                          district: district,
+                          commune: commune,
+                          province: province,
+                          address: address,
                         );
                         Posts? posts = await upLoadPost(createPost);
                         Navigator.pop(context, posts);// Quay lại màn hình chính

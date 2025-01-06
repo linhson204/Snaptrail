@@ -4,6 +4,7 @@ class FeedBack {
   int createdAt;
   int updatedAt;
   String id;
+  String nameTag;
 
   FeedBack({
     required this.userId,
@@ -11,6 +12,7 @@ class FeedBack {
     required this.createdAt,
     required this.updatedAt,
     required this.id,
+    required this.nameTag,
   });
 
   factory FeedBack.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class FeedBack {
       createdAt: json['createdAt'],
       content: json['content'],
       updatedAt: json['updatedAt'],
+      nameTag: json['nameTag'],
     );
   }
 }

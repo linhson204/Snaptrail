@@ -17,6 +17,9 @@ Future<Posts?> upLoadPost(CreatePost createPost) async {
     'commentsCount': createPost.commentsCount,
     'likesCount': createPost.likesCount,
     'address': createPost.address,
+    'district': createPost.district,
+    'commune': createPost.commune,
+    'province': createPost.province,
   };
 
   try {
