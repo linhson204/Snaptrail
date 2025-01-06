@@ -213,7 +213,7 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
     );
   }
 
-  void _deleteFeedback(Comment comment, int index) {
+  void _deleteFeedback(Comment comment, int index, int commentIndex) {
     showDialog(
       context: context,
       builder: (context) =>
@@ -234,12 +234,12 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
               ),
               TextButton(
                 onPressed: () async {
-                  await RemoveFeedback(comment.id,comment.feedBack[index].id);
+                  Comment? commentNew = await RemoveFeedback(comment.id,comment.feedBack[index].id);
                   setState(() {
                     FeedBacks[comment.id]!.removeAt(index);
                     userFeedBacks[comment.id]!.removeAt(index);
                     countFeedBackComment[comment.id] = countFeedBackComment[comment.id]! - 1;
-                    widget.listComment;
+                    widget.listComment[commentIndex] = commentNew!;
                   });
                   Navigator.of(context).pop();
                 },
@@ -536,7 +536,8 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                                           title: Text('Xóa'),
                                           onTap: () {
                                             Navigator.pop(context);
-                                            _deleteFeedback(comment, 0);
+                                            commentIndex = index;
+                                            _deleteFeedback(comment, 0, commentIndex);
                                           },
                                         ),
                                       ],
@@ -699,7 +700,8 @@ class _CommentScreenState extends State<CommentScreen> with WidgetsBindingObserv
                                               title: Text('Xóa'),
                                               onTap: () {
                                                 Navigator.pop(context);
-                                                _deleteFeedback(comment, k);
+                                                commentIndex = index;
+                                                _deleteFeedback(comment, k, commentIndex);
                                               },
                                             ),
                                           ],

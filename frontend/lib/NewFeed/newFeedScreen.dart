@@ -401,6 +401,7 @@ class _newFeedScreenState extends State<newFeedScreen> {
                                           user[0] = infoUser;
                                           like.insert(0, []);
                                           comments.insert(0, []);
+                                          timePost.insert(0, "Vừa xong");
                                         });
                                       }
                                     });
@@ -523,6 +524,7 @@ class _newFeedScreenState extends State<newFeedScreen> {
                                                             user.remove(postUser);
                                                             isLike.removeAt(index);
                                                             postLike.remove(postLike);
+                                                            timePost.removeAt(index);
                                                           });
                                                         } else {
                                                           ScaffoldMessenger.of(context).showSnackBar(

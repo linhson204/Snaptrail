@@ -45,8 +45,8 @@ const updateFeedbackInComment = catchAsync(async (req, res) => {
 });
 
 const deleteFeedbackFromComment = catchAsync(async (req, res) => {
-  await commentService.deleteFeedbackFromComment(req.params.commentId, req.params.feedbackId);
-  res.status(httpStatus.NO_CONTENT).send();
+  const comment = await commentService.deleteFeedbackFromComment(req.params.commentId, req.params.feedbackId);
+  res.status(httpStatus.OK).send(comment);
 });
 
 module.exports = {

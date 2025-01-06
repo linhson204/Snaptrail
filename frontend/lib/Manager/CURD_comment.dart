@@ -161,7 +161,7 @@ Future<Comment?> updateFeedback(String newContent, String commentId,String feedb
 
 
 
-Future<void> RemoveFeedback(String commentId,String feedbackId) async {
+Future<Comment?> RemoveFeedback(String commentId,String feedbackId) async {
   final url = Uri.parse('http://10.0.2.2:3000/v1/posts/comments/$commentId/feedback/$feedbackId');
 
   final response = await http.delete(
@@ -170,9 +170,12 @@ Future<void> RemoveFeedback(String commentId,String feedbackId) async {
       'Content-Type': 'application/json',
     },
   );
-  if (response.statusCode == 204) {
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
     print("Xóa thành công");
+    return Comment.fromJson(data);
   } else {
     print('Lỗi: ${response.statusCode}');
   }
+  return null;
 }

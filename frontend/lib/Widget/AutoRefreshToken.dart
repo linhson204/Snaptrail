@@ -24,7 +24,6 @@ void startAutoRefreshToken(BuildContext context,DateTime token_access_expires, S
     refreshDuration = Duration.zero;
   }
 
-  print('Token sẽ được làm mới sau: ${refreshDuration.inSeconds} giây');
 
   refreshTimer?.cancel(); // Hủy bỏ timer cũ nếu có
   refreshTimer = Timer(refreshDuration, () async {
