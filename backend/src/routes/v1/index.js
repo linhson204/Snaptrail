@@ -4,7 +4,6 @@ const userRoute = require('./user.route');
 const docsRoute = require('./docs.route');
 const pictureRoute = require('./picture.route');
 const locationRoute = require('./location.route');
-const cityRoute = require('./city.route');
 const postRoute = require('./post.route');
 const likesRoute = require('./likes.route');
 const commentsRoute = require('./comments.route');
@@ -29,10 +28,6 @@ const defaultRoutes = [
   {
     path: '/location',
     route: locationRoute,
-  },
-  {
-    path: '/city',
-    route: cityRoute,
   },
   {
     path: '/posts',

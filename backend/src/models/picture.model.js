@@ -23,10 +23,6 @@ const pictureSchema = new Schema({
     type: String,
     required: true,
   },
-  isTakenByCamera: {
-    type: Boolean,
-    default: true,
-  },
 });
 
 pictureSchema.plugin(toJSON);

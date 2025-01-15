@@ -22,17 +22,6 @@ const locationSchema = new Schema({
     ref: 'Users',
     required: true,
   },
-  cityId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'City',
-  },
-  categoryId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'LocationCategory',
-  },
-  categoryName: {
-    type: String,
-  },
   address: {
     type: String,
   },

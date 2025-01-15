@@ -19,7 +19,7 @@ const createPicture = async (req, res) => {
     }
 
     try {
-      const { userId, capturedAt, isTakenByCamera } = req.body;
+      const { userId, capturedAt } = req.body;
 
       const pictures = await Promise.all(
         req.files.map((file) => {
@@ -29,7 +29,6 @@ const createPicture = async (req, res) => {
             link: filePath,
             capturedAt,
             public_id: file.filename,
-            isTakenByCamera,
           });
           return picture;
         })
@@ -41,35 +40,6 @@ const createPicture = async (req, res) => {
   });
 };
 
-const getPictureById = async (id) => {
-  return Picture.findById(id);
-};
-
-// eslint-disable-next-line no-unused-vars
-const getPictures = async (req, res) => {
-  return Picture.find({ ...req.query, isTakenByCamera: true });
-};
-
-const deletePictureById = async (id) => {
-  const picture = await getPictureById(id);
-  if (!picture) throw new ApiError(httpStatus.NOT_FOUND, 'Picture Not Found!');
-
-  // Xóa ảnh từ Cloudinary
-  try {
-    const result = await cloudinary.uploader.destroy(picture.public_id); // Xóa bằng public_id
-    if (result.result !== 'ok') {
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to delete picture from Cloudinary');
-    }
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Error while deleting picture from Cloudinary');
-  }
-  await picture.remove();
-  return picture;
-};
-
 module.exports = {
   createPicture,
-  getPictureById,
-  getPictures,
-  deletePictureById,
 };
