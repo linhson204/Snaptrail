@@ -32,7 +32,7 @@ class AuthService {
   }
 
   Future<Token> getAccessToken() async {
-    String tokenjson =  await _storage.read(key: 'access_token') ?? 'null';
+    String tokenjson = await _storage.read(key: 'access_token') ?? 'null';
     return Token.fromJson(jsonDecode(tokenjson));
   }
 
@@ -52,6 +52,7 @@ class AuthService {
   Future<void> clearTokens() async {
     await _storage.deleteAll();
   }
+
   Future<bool> refreshAccessToken() async {
     final refreshToken = await getRefreshToken();
     if (refreshToken == null) return false;
@@ -72,7 +73,7 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>>  Login(String email, String password) async {
+  Future<Map<String, dynamic>> Login(String email, String password) async {
     final url = Uri.parse('$_baseUrl/auth/login');
 
     try {
@@ -86,19 +87,19 @@ class AuthService {
         ),
       );
 
-      if(response.statusCode == 200)
+      if (response.statusCode == 200)
         return {
           'mess': "Login success",
           'data': json.decode(response.body),
         };
-      else{
-        try{
+      else {
+        try {
           return {
             'mess': "Login failed",
             'data': json.decode(response.body),
           };
         }
-        catch(e){
+        catch (e) {
           return {
             'mess': "Login failed",
             'data': null,
@@ -113,7 +114,8 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>>  Register(String username, String email, String password) async {
+  Future<Map<String, dynamic>> Register(String username, String email,
+      String password) async {
     final url = Uri.parse('$_baseUrl/auth/register');
 
     try {
@@ -121,26 +123,26 @@ class AuthService {
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-              "username": username,
-              "email": email,
-              "password": password
-            }
+          "username": username,
+          "email": email,
+          "password": password
+        }
         ),
       );
 
-      if(response.statusCode == 201)
+      if (response.statusCode == 201)
         return {
           'mess': "Register success",
           'data': json.decode(response.body),
         };
-      else{
-        try{
+      else {
+        try {
           return {
             'mess': "Register failed",
             'data': json.decode(response.body),
           };
         }
-        catch(e){
+        catch (e) {
           return {
             'mess': "Register failed",
             'data': null,
@@ -155,7 +157,7 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>>  SendPinCode(String email) async {
+  Future<Map<String, dynamic>> SendPinCode(String email) async {
     final url = Uri.parse('$_baseUrl/auth/forgot-password');
 
     try {
@@ -168,19 +170,19 @@ class AuthService {
         ),
       );
 
-      if(response.statusCode == 200)
+      if (response.statusCode == 200)
         return {
           'mess': "Pincode send success",
           'data': json.decode(response.body),
         };
-      else{
-        try{
+      else {
+        try {
           return {
             'mess': "Pincode send failed",
             'data': json.decode(response.body),
           };
         }
-        catch(e){
+        catch (e) {
           return {
             'mess': "Pincode send failed",
             'data': null,
@@ -195,7 +197,8 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>>  VerifyEmail(String pinCode, String resetPasswordToken) async {
+  Future<Map<String, dynamic>> VerifyEmail(String pinCode,
+      String resetPasswordToken) async {
     final url = Uri.parse('$_baseUrl/auth/verify-pin-code');
 
     try {
@@ -207,18 +210,18 @@ class AuthService {
           "resetPasswordToken": resetPasswordToken
         }),
       );
-      if(response.statusCode == 200)
+      if (response.statusCode == 200)
         return {
           'mess': "Verify success",
         };
-      else{
-        try{
+      else {
+        try {
           return {
             'mess': "Verify failed",
             'data': json.decode(response.body),
           };
         }
-        catch(e){
+        catch (e) {
           return {
             'mess': "Verify failed",
             'data': null,
@@ -233,8 +236,10 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>>  ResetPassword(String password, String resetPasswordToken) async {
-    final url = Uri.parse('$_baseUrl/auth/reset-password').replace(queryParameters: {'token' : resetPasswordToken});
+  Future<Map<String, dynamic>> ResetPassword(String password,
+      String resetPasswordToken) async {
+    final url = Uri.parse('$_baseUrl/auth/reset-password').replace(
+        queryParameters: {'token': resetPasswordToken});
 
     try {
       final response = await http.post(
@@ -244,18 +249,18 @@ class AuthService {
           "password": password,
         }),
       );
-      if(response.statusCode == 204)
+      if (response.statusCode == 204)
         return {
           'mess': "Reset password success",
         };
-      else{
-        try{
+      else {
+        try {
           return {
             'mess': "Reset password failed",
             'data': json.decode(response.body),
           };
         }
-        catch(e){
+        catch (e) {
           return {
             'mess': "Reset password failed",
             'data': null,
@@ -269,7 +274,8 @@ class AuthService {
       };
     }
   }
-  Future<Map<String, dynamic>>  SendEmailPinCode(String bearerToken) async {
+
+  Future<Map<String, dynamic>> SendEmailPinCode(String bearerToken) async {
     final url = Uri.parse('$_baseUrl/auth/send-verification-email');
 
     try {
@@ -281,19 +287,19 @@ class AuthService {
         },
       );
 
-      if(response.statusCode == 200)
+      if (response.statusCode == 200)
         return {
           'mess': "Pincode send success",
           'data': json.decode(response.body),
         };
-      else{
-        try{
+      else {
+        try {
           return {
             'mess': "Pincode send failed",
             'data': json.decode(response.body),
           };
         }
-        catch(e){
+        catch (e) {
           return {
             'mess': "Pincode send failed",
             'data': null,
@@ -308,8 +314,10 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>>  VerifyEmailSignUp(String pinCode, String emailVerifyToken) async {
-    final url = Uri.parse('$_baseUrl/auth/verify-email').replace(queryParameters: {'token' : emailVerifyToken});
+  Future<Map<String, dynamic>> VerifyEmailSignUp(String pinCode,
+      String emailVerifyToken) async {
+    final url = Uri.parse('$_baseUrl/auth/verify-email').replace(
+        queryParameters: {'token': emailVerifyToken});
 
     try {
       final response = await http.post(
@@ -319,18 +327,18 @@ class AuthService {
           "pinCode": pinCode,
         }),
       );
-      if(response.statusCode == 200)
+      if (response.statusCode == 200)
         return {
           'mess': "Verify success",
         };
-      else{
-        try{
+      else {
+        try {
           return {
             'mess': "Verify failed",
             'data': json.decode(response.body),
           };
         }
-        catch(e){
+        catch (e) {
           return {
             'mess': "Verify failed",
             'data': null,
@@ -344,28 +352,4 @@ class AuthService {
       };
     }
   }
-  //
-  // Future<http.Response> fetchProtectedData() async {
-  //   String? accessToken = await getAccessToken();
-  //   final url = Uri.parse('$_baseUrl/protected');
-  //   var response = await http.get(
-  //     url,
-  //     headers: {'Authorization': 'Bearer $accessToken'},
-  //   );
-  //
-  //   if (response.statusCode == 401) {
-  //     bool success = await refreshAccessToken();
-  //     if (success) {
-  //       accessToken = await getAccessToken();
-  //       response = await http.get(
-  //         url,
-  //         headers: {'Authorization': 'Bearer $accessToken'},
-  //       );
-  //     } else {
-  //       await clearTokens();
-  //       throw Exception("Refresh token expired, please log in again");
-  //     }
-  //   }
-  //   return response;
-  // }
 }

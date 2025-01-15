@@ -7,10 +7,8 @@ class postScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 10),
       color: Colors.white,
       child: Center(
-          child: Text('Như kiểu nhật ký của FB',
-            style: TextStyle(fontSize: 32.0),
-          )
-      ),
+          child: Image.asset("assets/Image/hihi.png"),
+      )
     );
   }
 }
