@@ -50,7 +50,7 @@ Future<List<Like>> getLikePost(String postId) async {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-      List<dynamic> data = json['likes'];
+      List<dynamic> data = json;
       List<Like> likes = data.map((json) => Like.fromJson(json)).toList();
       return likes;
     } else {
