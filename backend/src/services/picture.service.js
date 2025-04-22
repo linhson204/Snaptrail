@@ -1,8 +1,6 @@
 const httpStatus = require('http-status');
-const ApiError = require('../utils/ApiError');
 const { Picture } = require('../models'); // Đường dẫn tới file chứa model Picture
 const { uploadPicture } = require('../middlewares/upload');
-const cloudinary = require('../config/cloudinary'); // Import Cloudinary config
 
 /**
  * Create a user
